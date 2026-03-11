@@ -2,10 +2,10 @@ import styles from "./page.module.css";
 
 const quickStart = [
   "context9",
-  "context9 init",
+  "Opening browser for device login...",
+  "Connected as you@github",
   "context9 switch feature/auth --lock",
-  "context9 push",
-  "context9 pull",
+  "✔ Context 'feature/auth' locked",
 ];
 
 const commandGroups = [
@@ -36,18 +36,18 @@ export default function HomePage() {
         <div className={styles.heroCopy}>
           <p className={styles.eyebrow}>context9</p>
           <h1 className={styles.title}>
-            CLI-first runtime context for parallel worktrees.
+            Branch-scoped runtime context for your CLI.
           </h1>
           <p className={styles.subtitle}>
-            Sign in from the terminal, open a browser with a device code, then
-            switch branches with the right `.env`, secret files, and branch-scoped
-            values already in place.
+            Start from the terminal, sign in with a device code, then switch
+            worktrees with the right `.env`, secret files, and branch-scoped
+            values already materialized.
           </p>
 
           <div className={styles.pills}>
             <span className={styles.pill}>Device login</span>
-            <span className={styles.pill}>Branch-scoped secrets</span>
-            <span className={styles.pill}>CLI only</span>
+            <span className={styles.pill}>Zero-copy sync</span>
+            <span className={styles.pill}>No dashboard required</span>
           </div>
         </div>
 
@@ -58,9 +58,11 @@ export default function HomePage() {
             <span />
           </div>
           <div className={styles.terminalBody}>
-            {quickStart.map((command) => (
+            {quickStart.map((command, index) => (
               <div key={command} className={styles.commandRow}>
-                <span className={styles.prompt}>%</span>
+                <span className={styles.prompt}>
+                  {index === 1 ? "…" : index === 2 || index === 4 ? "✓" : "%"}
+                </span>
                 <code>{command}</code>
               </div>
             ))}
@@ -87,6 +89,15 @@ export default function HomePage() {
             </div>
           </article>
         ))}
+      </section>
+
+      <section className={styles.footerCard}>
+        <p className={styles.footerLabel}>Start here</p>
+        <code className={styles.footerCommand}>context9</code>
+        <p className={styles.footerText}>
+          Use the default hosted backend at <code>https://context9.vercel.app</code>,
+          finish device login in your browser, then keep working from the CLI.
+        </p>
       </section>
     </main>
   );

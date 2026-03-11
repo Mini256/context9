@@ -1,85 +1,142 @@
 # context9
 
-`context9` makes `git worktree` usable for agent-based parallel development.
+`context9` is a CLI for restoring runtime context in `git worktree`.
 
-It restores branch runtime state that Git does not manage: `.env` files, secret files, shared values, and branch-scoped values.
+When multiple agents work on different branches, Git only separates code. It does not separate `.env` files, secret files, local runtime state, or branch-specific config. `context9` fills that gap.
 
-## Quick start
+## What problem it solves
+
+Without `context9`, a new worktree usually means extra manual work:
+
+- copy `.env` by hand
+- recreate private key files
+- remember which values are shared and which belong to one branch
+- keep multiple agents from reusing the same branch runtime by accident
+
+`context9` turns that into a repeatable flow:
+
+1. sign in once from the CLI
+2. create or switch a context
+3. pull the right files into the current worktree
+4. run and debug with the expected branch-specific values
+
+## Core idea
+
+`context9` stores tracked secret material remotely and materializes it into the current worktree on demand.
+
+It treats config in two scopes:
+
+- shared: values that can be reused across branches
+- context-scoped: values that belong to one branch or one isolated runtime
+
+## First-time setup
+
+Start the backend:
+
+```bash
+pnpm install
+cp apps/web/.env.example apps/web/.env.local
+pnpm dev:web
+```
+
+Then in your project root:
 
 ```bash
 context9 init
 context9
+```
+
+The first `context9` login uses device auth. It opens a browser to a page like:
+
+```text
+/login/device?code=XXXX-XXXX
+```
+
+By default, sign-in goes through GitHub. Email can still be used as a fallback if it is configured on the backend.
+
+## Daily workflow
+
+Create a new isolated branch context:
+
+```bash
 context9 create feature/oauth-rework
 context9 switch feature/oauth-rework --lock
+```
+
+Push local secret material:
+
+```bash
 context9 push
+```
+
+Pull and materialize files for the current context:
+
+```bash
 context9 pull
 ```
 
-First run opens a browser with a device code. Sign in there, then return to the CLI.
-
-## What it does
-
-- stores tracked secret material in db9
-- materializes `.env` files and non-git secret files into the current worktree
-- separates shared values from branch-scoped values
-- locks a context so multiple agents do not reuse the same branch runtime
-
-## Local development
+Run a command with the current context loaded:
 
 ```bash
-pnpm install
-pnpm build
-pnpm dev:web
-pnpm --filter @context9/cli exec tsx src/cli.ts --help
+context9 run pnpm dev
 ```
 
-## Backend setup
+## Common tasks
 
-The CLI talks to a running `context9` backend.
+Show the current project and active context:
 
-Connection priority:
+```bash
+context9 current
+```
 
-1. `DATABASE_URL` or `CONTEXT9_DATABASE_URL`
-2. `DB9_API_KEY`
-3. anonymous db9 bootstrap
+Inspect what is stored remotely without showing raw values in normal workflow:
 
-Required env:
+```bash
+context9 remote tree
+context9 remote inspect .env
+context9 manifest
+```
 
-- `NEXTAUTH_SECRET`
+Edit one dotenv key locally and push it:
 
-Optional env:
+```bash
+context9 edit -f .env --env DATABASE_URL=... --push
+```
+
+Log out or log in again:
+
+```bash
+context9 auth logout
+context9 auth login
+```
+
+Manual token login is still supported:
+
+```bash
+context9 auth login --token <token> --api-url https://context9.vercel.app
+```
+
+## Backend notes
+
+The CLI expects a running `context9` backend.
+
+The backend reads local configuration from:
+
+- [apps/web/.env.example](/Users/liangzhiyuan/Projects/context9/apps/web/.env.example)
+- `apps/web/.env.local`
+
+Typical local setup uses:
 
 - `NEXTAUTH_URL`
+- `NEXTAUTH_SECRET`
 - `DATABASE_URL`
-- `CONTEXT9_DATABASE_URL`
-- `DB9_API_KEY`
-- `DB9_API_URL`
 - `RESEND_API_KEY`
 - `CONTEXT9_EMAIL_FROM`
-- `CONTEXT9_REMOTE_DATABASE_NAME`
-- `CONTEXT9_SERVICE_TOKEN`
-- `CONTEXT9_DB9_CREDENTIALS_PATH`
-
-## Common commands
-
-- `context9`
-- `context9 auth login`
-- `context9 auth login --token <token> --api-url <url>`
-- `context9 auth logout`
-- `context9 init`
-- `context9 current`
-- `context9 create <branch>`
-- `context9 switch <context> --lock`
-- `context9 push`
-- `context9 pull`
-- `context9 remote tree`
-- `context9 remote inspect <relative/path>`
-- `context9 manifest`
-- `context9 edit -f .env --env KEY=VALUE --push`
-- `context9 run <command...>`
+- `GITHUB_CLIENT_ID`
+- `GITHUB_CLIENT_SECRET`
 
 ## Repository layout
 
-- `packages/cli`: CLI
-- `apps/web`: backend
-- `skills/context9`: agent skill and references
+- `packages/cli`: the CLI
+- `apps/web`: the backend
+- `skills/context9`: agent references and prompts

@@ -23,6 +23,8 @@ export interface RemoteSession {
   close: () => Promise<void>;
 }
 
+export const DEFAULT_API_BASE_URL = "https://context9.vercel.app";
+
 export interface DeviceAuthorizationStartResponse {
   deviceCode: string;
   userCode: string;
@@ -73,7 +75,7 @@ function resolveApiUrl(credentials: Context9Credentials): string {
   const url =
     credentials.api_url ??
     process.env.CONTEXT9_API_URL ??
-    "http://localhost:3000";
+    DEFAULT_API_BASE_URL;
 
   return url.replace(/\/+$/, "");
 }
@@ -217,7 +219,7 @@ export async function validateApiAccess(
   apiUrl?: string,
 ): Promise<{ mode: "service-token" | "api-token" | "session"; email?: string; name?: string }> {
   const session: RemoteSession = {
-    baseUrl: (apiUrl ?? process.env.CONTEXT9_API_URL ?? "http://localhost:3000").replace(/\/+$/, ""),
+    baseUrl: (apiUrl ?? process.env.CONTEXT9_API_URL ?? DEFAULT_API_BASE_URL).replace(/\/+$/, ""),
     token,
     close: async () => undefined,
   };

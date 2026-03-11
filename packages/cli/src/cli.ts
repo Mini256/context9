@@ -43,6 +43,7 @@ import {
   startDeviceAuthorization,
   syncProjectDefinitions,
   validateApiAccess,
+  DEFAULT_API_BASE_URL,
 } from "./lib/remote.js";
 import type { Context9Config, Context9Credentials, KeyRule, TrackedFileConfig } from "./lib/types.js";
 
@@ -433,14 +434,14 @@ auth
   .command("login")
   .description("Sign in to context9")
   .option("--token <token>", "context9 API token")
-  .option("--api-url <url>", "context9 API base URL, for example http://localhost:3000")
+  .option("--api-url <url>", `context9 API base URL, for example ${DEFAULT_API_BASE_URL}`)
   .action(async (options: { token?: string; apiUrl?: string }) => {
     const existing = await loadCredentials();
     const apiUrl =
       options.apiUrl ??
       process.env.CONTEXT9_API_URL ??
       existing.api_url ??
-      "http://localhost:3000";
+      DEFAULT_API_BASE_URL;
     const token = options.token ?? process.env.CONTEXT9_SERVICE_TOKEN;
 
     if (!token) {
@@ -520,7 +521,7 @@ program
     console.log(`config: ${configPath}`);
     console.log(`branch: ${branch ?? "(no git branch yet)"}`);
     console.log(`context: ${contextName}`);
-    console.log(`api_url: ${credentials.api_url ?? process.env.CONTEXT9_API_URL ?? "http://localhost:3000"}`);
+    console.log(`api_url: ${credentials.api_url ?? process.env.CONTEXT9_API_URL ?? DEFAULT_API_BASE_URL}`);
   });
 
 program
@@ -811,7 +812,7 @@ program.action(() => {
     const apiUrl =
       credentials.api_url ??
       process.env.CONTEXT9_API_URL ??
-      "http://localhost:3000";
+      DEFAULT_API_BASE_URL;
 
     if (!token) {
       await loginWithDeviceCode(apiUrl);
