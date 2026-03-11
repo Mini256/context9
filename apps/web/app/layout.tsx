@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 
 export const metadata = {
-  title: "Context9 API",
-  description: "Next.js API gateway for context9 and db9.",
+  title: "context9",
+  description: "CLI-first runtime context for parallel worktrees.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -13,9 +13,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           margin: 0,
           fontFamily:
             "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
-          background: "linear-gradient(135deg, #0f172a, #111827 45%, #1f2937)",
-          color: "#e5e7eb",
+          background: [
+            "radial-gradient(circle at top left, rgba(125, 211, 252, 0.18), transparent 24%)",
+            "radial-gradient(circle at top right, rgba(255, 255, 255, 0.12), transparent 18%)",
+            "linear-gradient(145deg, #07111f, #0a1321 42%, #101826 72%, #152131)",
+          ].join(", "),
+          color: "#e2e8f0",
           minHeight: "100vh",
+          backgroundAttachment: "fixed",
         }}
       >
         {children}

@@ -38,7 +38,9 @@ import {
   listRemoteTree,
   materializeTrackedFiles,
   openRemoteSession,
+  pollDeviceAuthorization,
   pushSecrets,
+  startDeviceAuthorization,
   syncProjectDefinitions,
   validateApiAccess,
 } from "./lib/remote.js";
@@ -54,6 +56,43 @@ function success(message: string): void {
 
 function warn(message: string): void {
   console.log(pc.yellow(message));
+}
+
+async function sleep(ms: number): Promise<void> {
+  await new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+function openBrowser(url: string): boolean {
+  try {
+    if (process.platform === "darwin") {
+      const child = spawn("open", [url], {
+        detached: true,
+        stdio: "ignore",
+      });
+      child.unref();
+      return true;
+    }
+
+    if (process.platform === "win32") {
+      const child = spawn("cmd", ["/c", "start", "", url], {
+        detached: true,
+        stdio: "ignore",
+      });
+      child.unref();
+      return true;
+    }
+
+    const child = spawn("xdg-open", [url], {
+      detached: true,
+      stdio: "ignore",
+    });
+    child.unref();
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function formatError(error: unknown): string {
@@ -116,6 +155,60 @@ async function resolveContextName(cwd: string, config: Context9Config, requested
 
   const branch = await getCurrentBranch(cwd);
   return branch ?? config.current_context_name ?? config.default_branch;
+}
+
+async function loginWithDeviceCode(apiUrl: string): Promise<void> {
+  const existing = await loadCredentials();
+  const identity = await getMachineIdentity();
+  const started = await startDeviceAuthorization(apiUrl, {
+    machineId: identity.machineId,
+    hostname: identity.hostname,
+    clientName: "context9-cli",
+  });
+
+  info(`Open this URL to continue: ${started.verificationUrl}`);
+  info(`Code: ${started.userCode}`);
+
+  if (openBrowser(started.verificationUrl)) {
+    success("Opened browser for device login.");
+  } else {
+    warn("Could not open a browser automatically.");
+  }
+
+  while (Date.now() < new Date(started.expiresAt).valueOf()) {
+    const polled = await pollDeviceAuthorization(apiUrl, started.deviceCode);
+
+    if (polled.status === "approved") {
+      const profile = await validateApiAccess(polled.accessToken, apiUrl);
+      const masterKey =
+        process.env.CONTEXT9_MASTER_KEY ??
+        existing.master_key ??
+        generateMasterKey();
+
+      await saveCredentials({
+        ...existing,
+        token: polled.accessToken,
+        api_url: apiUrl,
+        master_key: masterKey,
+        last_login_at: new Date().toISOString(),
+      });
+
+      success(
+        `Authenticated against context9 API at ${apiUrl}${profile.email ? ` as ${profile.email}` : profile.name ? ` as ${profile.name}` : ""}.`,
+      );
+      return;
+    }
+
+    if (polled.status === "expired" || polled.status === "not_found") {
+      throw new Error("Device login expired. Run `context9 auth login` again.");
+    }
+
+    if (polled.status === "pending") {
+      await sleep(polled.intervalSeconds * 1000);
+    }
+  }
+
+  throw new Error("Device login timed out. Run `context9 auth login` again.");
 }
 
 function renderManifest(config: Context9Config, contextName: string): string {
@@ -338,30 +431,21 @@ const auth = program.command("auth").description("Manage context9 API credential
 
 auth
   .command("login")
-  .description("Store a context9 API token and base URL")
+  .description("Sign in to context9")
   .option("--token <token>", "context9 API token")
   .option("--api-url <url>", "context9 API base URL, for example http://localhost:3000")
-  .option("--email <email>", "reserved for future context9 hosted auth")
-  .option("--password <password>", "reserved for future context9 hosted auth")
-  .action(async (options: { token?: string; apiUrl?: string; email?: string; password?: string }) => {
-    if (options.email || options.password) {
-      throw new Error(
-        "Email/password login is not supported for the CLI yet. Use `context9 auth login --token <token> --api-url <url>`.",
-      );
-    }
-
+  .action(async (options: { token?: string; apiUrl?: string }) => {
     const existing = await loadCredentials();
     const apiUrl =
       options.apiUrl ??
       process.env.CONTEXT9_API_URL ??
       existing.api_url ??
       "http://localhost:3000";
-    const token = options.token ?? process.env.CONTEXT9_SERVICE_TOKEN ?? existing.token;
+    const token = options.token ?? process.env.CONTEXT9_SERVICE_TOKEN;
 
     if (!token) {
-      throw new Error(
-        "No API token supplied. Pass `--token`, or set CONTEXT9_SERVICE_TOKEN.",
-      );
+      await loginWithDeviceCode(apiUrl);
+      return;
     }
 
     const profile = await validateApiAccess(token, apiUrl);
@@ -722,7 +806,20 @@ program
   });
 
 program.action(() => {
-  warn("No command provided. Run `context9 --help`.");
+  return loadCredentials().then(async (credentials) => {
+    const token = credentials.token ?? process.env.CONTEXT9_SERVICE_TOKEN;
+    const apiUrl =
+      credentials.api_url ??
+      process.env.CONTEXT9_API_URL ??
+      "http://localhost:3000";
+
+    if (!token) {
+      await loginWithDeviceCode(apiUrl);
+      return;
+    }
+
+    warn("No command provided. Run `context9 --help`.");
+  });
 });
 
 program.parseAsync(process.argv).catch((error) => {

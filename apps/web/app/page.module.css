@@ -1,0 +1,251 @@
+.page {
+  position: relative;
+  overflow: hidden;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 96px 24px 120px;
+}
+
+.haloLeft,
+.haloRight {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(24px);
+  pointer-events: none;
+}
+
+.haloLeft {
+  top: 48px;
+  left: -120px;
+  width: 320px;
+  height: 320px;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.28), transparent 58%),
+    radial-gradient(circle at 70% 70%, rgba(121, 164, 255, 0.32), transparent 62%);
+}
+
+.haloRight {
+  top: 120px;
+  right: -80px;
+  width: 280px;
+  height: 280px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(84, 214, 255, 0.22), transparent 58%),
+    radial-gradient(circle at 55% 40%, rgba(255, 255, 255, 0.18), transparent 52%);
+}
+
+.hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 440px);
+  gap: 28px;
+  align-items: center;
+}
+
+.heroCopy,
+.terminalCard,
+.glassCard {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.16),
+    rgba(255, 255, 255, 0.07)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 20px 60px rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(24px) saturate(1.25);
+  -webkit-backdrop-filter: blur(24px) saturate(1.25);
+}
+
+.heroCopy {
+  padding: 36px;
+  border-radius: 32px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(191, 219, 254, 0.92);
+}
+
+.title {
+  margin: 16px 0 0;
+  font-size: clamp(48px, 7vw, 78px);
+  line-height: 0.96;
+  letter-spacing: -0.05em;
+  color: rgba(248, 250, 252, 0.98);
+}
+
+.subtitle {
+  max-width: 44rem;
+  margin: 20px 0 0;
+  font-size: 18px;
+  line-height: 1.75;
+  color: rgba(226, 232, 240, 0.82);
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.pill {
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(241, 245, 249, 0.92);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+
+.terminalCard {
+  padding: 18px;
+  border-radius: 28px;
+}
+
+.terminalChrome {
+  display: flex;
+  gap: 8px;
+}
+
+.terminalChrome span {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.38);
+}
+
+.terminalBody {
+  margin-top: 18px;
+  padding: 20px;
+  border-radius: 22px;
+  background: rgba(15, 23, 42, 0.48);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.commandRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 9px 0;
+  color: rgba(236, 253, 245, 0.96);
+  font-size: 15px;
+}
+
+.commandRow code {
+  font-family:
+    ui-monospace, SFMono-Regular, SF Mono, Menlo, Monaco, Consolas, monospace;
+}
+
+.prompt {
+  color: rgba(125, 211, 252, 0.9);
+}
+
+.terminalHint {
+  margin: 16px 4px 2px;
+  color: rgba(226, 232, 240, 0.74);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.terminalHint code {
+  color: rgba(248, 250, 252, 0.96);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.glassCard {
+  padding: 22px;
+  border-radius: 24px;
+}
+
+.cardTop {
+  min-height: 110px;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 18px;
+  color: rgba(248, 250, 252, 0.98);
+}
+
+.cardDetail {
+  margin: 12px 0 0;
+  line-height: 1.72;
+  color: rgba(226, 232, 240, 0.75);
+}
+
+.cardCommands {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.inlineCommand {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(248, 250, 252, 0.94);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 960px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding-top: 72px;
+    padding-bottom: 88px;
+  }
+
+  .heroCopy,
+  .terminalCard,
+  .glassCard {
+    border-radius: 24px;
+  }
+
+  .heroCopy {
+    padding: 24px;
+  }
+
+  .terminalCard {
+    padding: 14px;
+  }
+
+  .title {
+    font-size: 42px;
+  }
+
+  .subtitle {
+    font-size: 16px;
+  }
+
+  .terminalBody {
+    padding: 16px;
+  }
+}

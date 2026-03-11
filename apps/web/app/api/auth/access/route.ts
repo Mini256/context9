@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       ok: true,
       mode: access.mode,
-      user: access.session?.user ?? null,
+      user: access.session?.user ?? access.user ?? null,
     });
   } catch (error) {
     return NextResponse.json(

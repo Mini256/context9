@@ -75,6 +75,60 @@ const SCHEMA_STATEMENTS = [
   )`,
   `create index if not exists context9_secret_entries_by_scope
     on context9.secret_entries(project_id, file_path, context_name)`,
+  `create table if not exists context9.auth_users (
+    id uuid primary key,
+    email text not null,
+    name text,
+    email_verified timestamptz,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+  )`,
+  `create unique index if not exists context9_auth_users_email_unique
+    on context9.auth_users (lower(email))`,
+  `create table if not exists context9.auth_accounts (
+    provider text not null,
+    provider_account_id text not null,
+    user_id uuid not null references context9.auth_users(id) on delete cascade,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now(),
+    primary key(provider, provider_account_id)
+  )`,
+  `create table if not exists context9.auth_verification_tokens (
+    identifier text not null,
+    token text not null,
+    expires timestamptz not null,
+    created_at timestamptz not null default now(),
+    primary key(identifier, token)
+  )`,
+  `create index if not exists context9_auth_verification_tokens_by_expires
+    on context9.auth_verification_tokens(expires)`,
+  `create table if not exists context9.auth_api_tokens (
+    id uuid primary key,
+    user_id uuid not null references context9.auth_users(id) on delete cascade,
+    token_hash text not null unique,
+    token_prefix text not null,
+    created_at timestamptz not null default now(),
+    last_used_at timestamptz,
+    revoked_at timestamptz
+  )`,
+  `create table if not exists context9.auth_device_codes (
+    device_code text primary key,
+    user_code text not null unique,
+    user_id uuid references context9.auth_users(id) on delete set null,
+    api_token_id uuid references context9.auth_api_tokens(id) on delete set null,
+    access_token text,
+    status text not null,
+    expires_at timestamptz not null,
+    machine_id text,
+    hostname text,
+    client_name text,
+    approved_at timestamptz,
+    consumed_at timestamptz,
+    created_at timestamptz not null default now(),
+    last_polled_at timestamptz
+  )`,
+  `create index if not exists context9_auth_device_codes_by_status
+    on context9.auth_device_codes(status, expires_at)`,
 ];
 
 export interface Context9DbSession {

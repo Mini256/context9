@@ -23,9 +23,34 @@ export interface RemoteSession {
   close: () => Promise<void>;
 }
 
+export interface DeviceAuthorizationStartResponse {
+  deviceCode: string;
+  userCode: string;
+  verificationUrl: string;
+  expiresAt: string;
+  intervalSeconds: number;
+}
+
+export type DeviceAuthorizationPollResponse =
+  | {
+      status: "pending";
+      intervalSeconds: number;
+      expiresAt: string;
+      userCode: string;
+    }
+  | {
+      status: "approved";
+      accessToken: string;
+      email: string;
+      name?: string;
+    }
+  | {
+      status: "expired" | "not_found";
+    };
+
 interface ApiAccessResponse {
   ok: boolean;
-  mode: "service-token" | "session";
+  mode: "service-token" | "api-token" | "session";
   user?: {
     email?: string | null;
     name?: string | null;
@@ -58,11 +83,51 @@ function requireApiToken(credentials: Context9Credentials): string {
 
   if (!token) {
     throw new Error(
-      "No context9 API token found. Run `context9 auth login --token <token> --api-url <url>` or set CONTEXT9_SERVICE_TOKEN.",
+      "No context9 API token found. Run `context9` or `context9 auth login` first.",
     );
   }
 
   return token;
+}
+
+async function anonymousApiRequest<T>(
+  baseUrl: string,
+  method: string,
+  routePath: string,
+  body?: unknown,
+): Promise<T> {
+  const response = await fetch(`${baseUrl.replace(/\/+$/, "")}${routePath}`, {
+    method,
+    headers: {
+      "content-type": "application/json",
+    },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+
+  let parsed: unknown = null;
+  const text = await response.text();
+  if (text) {
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      parsed = text;
+    }
+  }
+
+  if (!response.ok) {
+    if (
+      parsed &&
+      typeof parsed === "object" &&
+      "error" in parsed &&
+      typeof parsed.error === "string"
+    ) {
+      throw new Error(parsed.error);
+    }
+
+    throw new Error(`API request failed with status ${response.status}`);
+  }
+
+  return parsed as T;
 }
 
 async function apiRequest<T>(
@@ -150,7 +215,7 @@ function decryptEntries(
 export async function validateApiAccess(
   token: string,
   apiUrl?: string,
-): Promise<{ mode: "service-token" | "session"; email?: string; name?: string }> {
+): Promise<{ mode: "service-token" | "api-token" | "session"; email?: string; name?: string }> {
   const session: RemoteSession = {
     baseUrl: (apiUrl ?? process.env.CONTEXT9_API_URL ?? "http://localhost:3000").replace(/\/+$/, ""),
     token,
@@ -168,6 +233,36 @@ export async function validateApiAccess(
     email: response.user?.email ?? undefined,
     name: response.user?.name ?? undefined,
   };
+}
+
+export async function startDeviceAuthorization(
+  apiUrl: string,
+  input?: {
+    machineId?: string;
+    hostname?: string;
+    clientName?: string;
+  },
+): Promise<DeviceAuthorizationStartResponse> {
+  return anonymousApiRequest<DeviceAuthorizationStartResponse>(
+    apiUrl,
+    "POST",
+    "/api/auth/device/start",
+    input,
+  );
+}
+
+export async function pollDeviceAuthorization(
+  apiUrl: string,
+  deviceCode: string,
+): Promise<DeviceAuthorizationPollResponse> {
+  return anonymousApiRequest<DeviceAuthorizationPollResponse>(
+    apiUrl,
+    "POST",
+    "/api/auth/device/poll",
+    {
+      deviceCode,
+    },
+  );
 }
 
 export async function openRemoteSession(
