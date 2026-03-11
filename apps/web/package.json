@@ -1,0 +1,33 @@
+{
+  "name": "@context9/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "prisma:generate": "prisma generate",
+    "prisma:db:push": "prisma db push",
+    "start": "next start",
+    "typecheck": "prisma generate && tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.4.2",
+    "@prisma/client": "^7.4.2",
+    "get-db9": "^0.6.1",
+    "next": "^16.1.6",
+    "next-auth": "^4.24.13",
+    "pg": "^8.16.3",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.0",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "dotenv": "^17.3.1",
+    "prisma": "^7.4.2",
+    "typescript": "^5.9.3"
+  }
+}

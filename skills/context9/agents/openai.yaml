@@ -1,0 +1,7 @@
+interface:
+  display_name: "Context9"
+  short_description: "Switch contexts and restore branch-scoped secrets."
+  default_prompt: "Use $context9 to switch worktree contexts, inspect redacted secret manifests, and follow provider hints without exposing secret values."
+
+policy:
+  allow_implicit_invocation: true

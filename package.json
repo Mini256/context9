@@ -1,0 +1,13 @@
+{
+  "name": "context9-workspace",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "build": "pnpm --filter @context9/cli build && pnpm --filter @context9/web build",
+    "dev": "pnpm --filter @context9/cli dev",
+    "dev:web": "pnpm --filter @context9/web dev",
+    "test": "pnpm --filter @context9/cli test",
+    "test:watch": "pnpm --filter @context9/cli test:watch",
+    "typecheck": "pnpm --filter @context9/cli typecheck && pnpm --filter @context9/web typecheck"
+  }
+}
