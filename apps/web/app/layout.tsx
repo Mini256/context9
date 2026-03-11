@@ -14,9 +14,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           fontFamily:
             "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
           background: [
-            "radial-gradient(circle at top left, rgba(125, 211, 252, 0.18), transparent 24%)",
-            "radial-gradient(circle at top right, rgba(255, 255, 255, 0.12), transparent 18%)",
-            "linear-gradient(145deg, #07111f, #0a1321 42%, #101826 72%, #152131)",
+            "radial-gradient(circle at top center, rgba(255, 255, 255, 0.08), transparent 24%)",
+            "radial-gradient(circle at 20% 18%, rgba(56, 189, 248, 0.08), transparent 22%)",
+            "linear-gradient(180deg, #020406, #04070c 52%, #05090f)",
           ].join(", "),
           color: "#e2e8f0",
           minHeight: "100vh",

@@ -31,19 +31,17 @@ It treats config in two scopes:
 
 ## First-time setup
 
-Start the backend:
+Install the CLI:
 
 ```bash
-pnpm install
-cp apps/web/.env.example apps/web/.env.local
-pnpm dev:web
+curl -fsSL https://context9.vercel.app/install | sh
 ```
 
-Then in your project root:
+Then in your project:
 
 ```bash
-context9 init
 context9
+context9 init
 ```
 
 The first `context9` login uses device auth. It opens a browser to a page like:
@@ -116,24 +114,9 @@ Manual token login is still supported:
 context9 auth login --token <token> --api-url https://context9.vercel.app
 ```
 
-## Backend notes
+## Local development
 
-The CLI expects a running `context9` backend.
-
-The backend reads local configuration from:
-
-- [apps/web/.env.example](/Users/liangzhiyuan/Projects/context9/apps/web/.env.example)
-- `apps/web/.env.local`
-
-Typical local setup uses:
-
-- `NEXTAUTH_URL`
-- `NEXTAUTH_SECRET`
-- `DATABASE_URL`
-- `RESEND_API_KEY`
-- `CONTEXT9_EMAIL_FROM`
-- `GITHUB_CLIENT_ID`
-- `GITHUB_CLIENT_SECRET`
+If you are developing the backend or landing page in this repository, see `apps/web/README.md`.
 
 ## Repository layout
 

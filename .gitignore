@@ -9,3 +9,5 @@ node_modules
 coverage
 .next
 *.tsbuildinfo
+.playwright-cli
+output/playwright
